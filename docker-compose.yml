@@ -1,0 +1,56 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver_livros
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=TesteAPI!123 
+    ports:
+      - "1433:1433"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P TesteAPI!123 -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 3s
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - app-network
+
+  api:
+    build:
+      context: ./GerenciadorLivros
+      dockerfile: Dockerfile
+    container_name: api_livros
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db;Database=GerenciadorLivrosDB;User Id=sa;Password=TesteAPI!123;TrustServerCertificate=True;
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+
+  web:
+    build:
+      context: ./GerenciadorLivrosApp
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:8080/api/v1
+    container_name: frontend_livros
+    ports:
+      - "3000:80" 
+    depends_on:
+      - api
+    networks:
+      - app-network
+
+volumes:
+  sqlserver_data:
+
+networks:
+  app-network:
+    driver: bridge

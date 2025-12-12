@@ -1,0 +1,12 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    volumes:
+      - ./data:/initdb
+    container_name: todo-database
+    ports:
+        - 1433:1433
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=TesteAPI!123
+      - MSSQL_PID=Developer
