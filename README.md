@@ -109,3 +109,6 @@ Abra o navegador:
     npm run dev
 
 -   Aplicação: http://localhost:5173/
+
+### Executando testes unitários do frontend
+    npx vitest
